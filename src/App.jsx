@@ -1,33 +1,53 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react"
+import cityService from "./services/citys"
+import SearchCity from "./components/SearchCity"
+import { Weather, Table } from "./components/Weather"
+const url = `http://api.weatherapi.com/v1/current.json?key=${import.meta.env.VITE_API_KEY}&lang=en&q=`
 
-function App() {
-  const [count, setCount] = useState(0)
+const App = () => {
+  const [inputCity, setInputCity] = useState('')
+  const [error, setError] = useState('')
+  const [city, setCity] = useState(null)
+
+  const handleSearchCity = (e) => {
+    e.preventDefault()
+
+    if (inputCity.trim() === "") {
+      setError("Search a countrie...")
+      setCity(null)
+    } else {
+      cityService
+        .getcity(url, inputCity)
+        .then(response => {
+          setError("")
+          setCity(response)
+        })
+        .catch(error => {
+          setError("Search a valid countrie.")
+          setCity(null)
+        })
+    }
+  }
+
+  const handleInputCity = (e) => {
+    setInputCity(e.target.value)
+  }
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <h1 className="text-center text-4xl font-bold m-5 text-white">Weather App</h1>
+      
+      {error && <p className="text-red-500 font-bold text-center text-xl">{error}</p>}
+      <SearchCity
+        onSearch={handleSearchCity}
+        onInputCity={handleInputCity}
+      />
+
+      {city && <Table>
+        <Weather 
+          countrie={city}
+        />
+      </Table>}
     </>
   )
 }
